@@ -44,7 +44,7 @@ const BookSearch: React.FC = () => {
         setMessage("Looking for books")
         setSearchFor(searchValue)
         const sortValue = sort === "old" ? "&sort=old" : ""
-        const response = await fetch(`https://openlibrary.org/search.json?qdfdf=${searchValue}${sortValue}`, {
+        const response = await fetch(`https://openlibrary.org/search.json?q=${searchValue}${sortValue}`, {
             method: "GET"
         })
 
