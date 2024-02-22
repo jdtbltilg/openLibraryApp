@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, ChangeEventHandler } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { IDoc, IOpenLibraryOrgResults } from '../Types/OpenLibraryTypes'
 import TextField from '@mui/material/TextField';
 import _debounce from 'lodash/debounce';
@@ -31,20 +31,32 @@ const BookSearch: React.FC = () => {
     const [loading, setLoading] = useState(false)
     const [searchFor, setSearchFor] = useState("")
     const [sortBy, setSortBy] = useState("Relevance")
+    const [message, setMessage] = useState("")
     
     useEffect(() => {
-        (async () => {await search(searchFor, sortBy)})()
-    }, [sortBy]);
+        if(searchFor){
+            (async () => {await search(searchFor, sortBy)})()
+        }
+    }, [sortBy, searchFor]);
 
     async function search(searchValue: string, sort: string) {
         setLoading(true)
+        setMessage("Looking for books")
         setSearchFor(searchValue)
         const sortValue = sort === "old" ? "&sort=old" : ""
-        const data = await fetch(`https://openlibrary.org/search.json?q=${searchValue}${sortValue}`, {
+        const response = await fetch(`https://openlibrary.org/search.json?qdfdf=${searchValue}${sortValue}`, {
             method: "GET"
-        });
-        const jsonData = await data.json();
-        setSearchResults(jsonData);
+        })
+
+        if (response.ok) {
+            const data = await response.json()
+            setSearchResults(data);
+        } else {
+            // handle the errors
+            const errors: Array<{message: string}> = await response.json()
+            setMessage(errors?.map(e => e.message).join('\n') ?? 'unknown error')
+        }
+
         setLoading(false)
     };
 
@@ -59,8 +71,8 @@ const BookSearch: React.FC = () => {
     useEffect(() => {
         if(searchResults){
             setAutoCompleteOptions(searchResults.docs)
+            setMessage((searchResults.numFound < 1) ? "No books found" : "")
         }
-        
     }, [searchResults]);
 
     return (
@@ -87,30 +99,44 @@ const BookSearch: React.FC = () => {
             {loading && (
                 <LinearProgress />
             )}
-        </Box>
-        <Grid container rowSpacing={2} columnSpacing={2}>
-            {autoCompleteOptions.map((book: IDoc) => (
-                <Grid item xs={4}>
+        </Box>       
+            {!loading && searchResults && searchResults.numFound > 0 && (
+                <Grid container rowSpacing={2} columnSpacing={2}>
+                    {autoCompleteOptions.map((book: IDoc) => (
+                        <Grid item xs={4}>
+                            <Item>
+                                <Typography variant="h6" color="text.primary">
+                                    {book.title}
+                                </Typography>                        
+                                <Typography variant="subtitle1" color="text.primary">
+                                    by {book.author_name}                            
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    First Published {book.first_publish_year} | {book.number_of_pages_median} pages
+                                </Typography>
+                                <Divider />
+                                <div style={{height: '100px', overflow: 'scroll', textAlign: 'left'}}>
+                                    <Typography variant="caption">
+                                        isbn: {(book.isbn) ? book.isbn.join(', ') : '' }
+                                    </Typography>
+                                </div>
+                            </Item>
+                        </Grid>
+                    ))}
+                </Grid>   
+            )}
+            {!loading && searchResults && searchResults.numFound < 1 && (
+                <Grid container direction="row" justifyContent="center" alignItems="center">
+                 <Grid item xs={4}>
                     <Item>
                         <Typography variant="h6" color="text.primary">
-                            {book.title}
-                        </Typography>                        
-                        <Typography variant="subtitle1" color="text.primary">
-                            by {book.author_name}                            
+                            {message}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            First Published {book.first_publish_year} | {book.number_of_pages_median} pages
-                        </Typography>
-                        <Divider />
-                        <div style={{height: '100px', overflow: 'scroll', textAlign: 'left'}}>
-                            <Typography variant="caption">
-                                isbn: {(book.isbn) ? book.isbn.join(', ') : '' }
-                            </Typography>
-                        </div>
                     </Item>
                 </Grid>
-            ))}
-        </Grid></Box>
+                </Grid>
+            )}
+            </Box>
         </>
     );
   };
