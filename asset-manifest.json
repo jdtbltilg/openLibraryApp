@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/openLibraryApp/static/css/main.964fdded.css",
-    "main.js": "/openLibraryApp/static/js/main.c2cec9ff.js",
+    "main.js": "/openLibraryApp/static/js/main.b5c90599.js",
     "index.html": "/openLibraryApp/index.html",
     "main.964fdded.css.map": "/openLibraryApp/static/css/main.964fdded.css.map",
-    "main.c2cec9ff.js.map": "/openLibraryApp/static/js/main.c2cec9ff.js.map"
+    "main.b5c90599.js.map": "/openLibraryApp/static/js/main.b5c90599.js.map"
   },
   "entrypoints": [
     "static/css/main.964fdded.css",
-    "static/js/main.c2cec9ff.js"
+    "static/js/main.b5c90599.js"
   ]
 }
